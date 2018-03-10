@@ -71,12 +71,12 @@ func getWordData(index int) (word string, err error)  {
 
 
 func getExtendedWordData(word string) (Definitions map[string][]string, UsageExamples map[string][]string, err error) {
-
 	urlToParse := OXFORD_DICTIONARY_URL + word
 	wordPage,err := goquery.NewDocument(urlToParse)
 	if err!=nil {
 		return nil,nil,err
 	}
+
 	partsOfTheLanguage := make([]string, 0)
 	wordPage.Find("section .gramb h3 .pos ").Each(func(i int, s *goquery.Selection) {
 
@@ -86,22 +86,19 @@ func getExtendedWordData(word string) (Definitions map[string][]string, UsageExa
 
 	})
 
-
 	usageExamples := make(map[string][]string ,0)
 	definitions := make(map[string][]string , 0)
-
-	indexOfPartLanguageOne := 0;
-	indexOfPartLanguageTwo := 0;
+	indexOfPartLanguageOne := 0
+	indexOfPartLanguageTwo := 0
+	//Definitions
 	wordPage.Find("section .semb li .trg .ind" ).Each(func(j int, s *goquery.Selection) {
-
 		if j < NUMBER_OF_EXAMPLES {
 			definition := s.Find("span").Text()
 			definitions[partsOfTheLanguage[indexOfPartLanguageOne]] = append(definitions[partsOfTheLanguage[indexOfPartLanguageOne]], definition)
 			indexOfPartLanguageOne++
 		}
-
-
 	})
+	//Examples of usage
 	wordPage.Find("section .examples .exg .ex" ).Each(func(k int, s *goquery.Selection) {
 		if k < NUMBER_OF_EXAMPLES {
 			usageExample := s.Find("em").Text()
