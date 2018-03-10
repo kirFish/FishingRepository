@@ -22,31 +22,35 @@ type RowWordData struct{
 	WordRating int
 }
 
+const (
+	WORD_COUNT        = "http://www.wordcount.org/dbquery.php?toFind="
+	OXFORD_DICTIONARY = "https://en.oxforddictionaries.com/definition/"
+)
+
 func main() {
 
 	// making random int from 0 : 88800
 	var example RowWordData
 	rand.Seed(time.Now().UnixNano())
-	index:= rand.Intn(88800)
+	//index:= rand.Intn(88800)
 	// initializing the "WordRating" field in example of RowWordData
-	example.WordRating = index
+	example.WordRating = 2
 	// trying to get value of "Word" to type it into "Word" field in example of RowWordData
-	word := wordCountWorker(example)
+	word := getWord(example)
 	example.Word = word
 	// Getting 5 usage examples for
-	usageExamples := dictionaryUsageExample(example)
+	usageExamples := getUsageExamples(example)
 	example.UsageExample = usageExamples
 	// gettting 5 or less definitions
-	dictionaryDefinitionExample(example)
+	getWordDefinitions(example)
 
 }
 // got example like an argument and return "word" type - string
-func  wordCountWorker(example RowWordData)(string) {
+func getWord(example RowWordData)(string) {
 
 	// got an example like an argument and parsing word from site with "WordRating" rating
 	client := http.Client{}
-	url := "http://www.wordcount.org/dbquery.php?toFind="
-	url = url + strconv.Itoa(example.WordRating-1)
+	url := WORD_COUNT + strconv.Itoa(example.WordRating-1)
 	url = url + "&method=SEARCH_BY_INDEX"
 
 	resp, err := client.Get(url)
@@ -69,10 +73,9 @@ func  wordCountWorker(example RowWordData)(string) {
 	//return word
 	return word
 }
-func  dictionaryUsageExample(example RowWordData)([]string){
-	urlToParse := "https://en.oxforddictionaries.com/definition/"
+func getUsageExamples(example RowWordData)([]string){
 	//need to change the word to example.Word
-	urlToParse = urlToParse + "chaos"
+	urlToParse := OXFORD_DICTIONARY + "chaos"
 
 	doc2, err := goquery.NewDocument(urlToParse)
 	if err != nil {
@@ -98,7 +101,7 @@ func  dictionaryUsageExample(example RowWordData)([]string){
 	}
 	return example.UsageExample
 }
-func  dictionaryDefinitionExample(example RowWordData)([]string){
+func getWordDefinitions(example RowWordData)([]string){
 
 	urlToParse := "https://en.oxforddictionaries.com/definition/"
 	urlToParse = urlToParse + "chaos"
