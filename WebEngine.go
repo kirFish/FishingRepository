@@ -12,14 +12,15 @@ import (
 
 type RowWordData struct {
 	Word           string
-	Definitions    [][]string
-	UsageExamples  [][]string
+	Definitions    map[string][]string
+	UsageExamples  map[string][]string
 	WordRang       int
-	PartOfLanguage []string
+
 }
 
 
 const (
+	NUMBER_OF_EXAMPLES    = 5
 	WORD_COUNT_URL        = "http://www.wordcount.org/dbquery.php?"
 	OXFORD_DICTIONARY_URL = "https://en.oxforddictionaries.com/definition/"
 
@@ -37,7 +38,7 @@ func GetRandomWord() (*RowWordData, error) {
 		return nil, err
 	}
 
-	wordData.Definitions, wordData.UsageExamples, wordData.PartOfLanguage,err = getExtendedWordData(wordData.Word)
+	wordData.Definitions, wordData.UsageExamples,err = getExtendedWordData(wordData.Word)
 	if err != nil {
 		return nil, err
 	}
@@ -69,18 +70,14 @@ func getWordData(index int) (word string, err error)  {
 }
 
 
-func getExtendedWordData(word string) (Definitions [][]string, UsageExamples [][]string,partOftheLanguage []string, err error) {
+func getExtendedWordData(word string) (Definitions map[string][]string, UsageExamples map[string][]string, err error) {
+
 	urlToParse := OXFORD_DICTIONARY_URL + word
 	wordPage,err := goquery.NewDocument(urlToParse)
-
 	if err!=nil {
-
-		return nil,nil,nil,err
-
+		return nil,nil,err
 	}
-
 	partsOfTheLanguage := make([]string, 0)
-
 	wordPage.Find("section .gramb h3 .pos ").Each(func(i int, s *goquery.Selection) {
 
 			value := s.Find("span").Text()
@@ -89,34 +86,32 @@ func getExtendedWordData(word string) (Definitions [][]string, UsageExamples [][
 
 	})
 
-	usageExamples := make([][]string,len(partsOfTheLanguage) , 0)
-	definitions := make([][]string,len(partsOfTheLanguage) , 0)
 
-	wordPage.Find("section .gramb h3 .pos ").Each(func(i int, s *goquery.Selection) {
+	usageExamples := make(map[string][]string ,0)
+	definitions := make(map[string][]string , 0)
 
-		wordPage.Find(".semb li .trg .ind" ).Each(func(j int, s *goquery.Selection) {
+	indexOfPartLanguageOne := 0;
+	indexOfPartLanguageTwo := 0;
+	wordPage.Find("section .semb li .trg .ind" ).Each(func(j int, s *goquery.Selection) {
 
-			definitionExample := s.Find("span").Text()
-			definitions[i] = append(definitions[i],definitionExample)
-
-
-
-		})
-
-		wordPage.Find(".examples .exg .ex" ).Each(func(k int, s *goquery.Selection) {
-			if k < 5 {
-				usageExample := s.Find("em").Text()
-				usageExamples[i] = append(usageExamples[i], usageExample)
-			}
-		})
-
+		if j < NUMBER_OF_EXAMPLES {
+			definition := s.Find("span").Text()
+			definitions[partsOfTheLanguage[indexOfPartLanguageOne]] = append(definitions[partsOfTheLanguage[indexOfPartLanguageOne]], definition)
+			indexOfPartLanguageOne++
+		}
 
 
 	})
+	wordPage.Find("section .examples .exg .ex" ).Each(func(k int, s *goquery.Selection) {
+		if k < NUMBER_OF_EXAMPLES {
+			usageExample := s.Find("em").Text()
+			usageExamples[partsOfTheLanguage[indexOfPartLanguageTwo]] = append(definitions[partsOfTheLanguage[indexOfPartLanguageTwo]], usageExample)
 
+		}
+		indexOfPartLanguageTwo++
+	})
 
-
-	return definitions, usageExamples,partsOfTheLanguage,err
+	return definitions, usageExamples,nil
 }
 
 
