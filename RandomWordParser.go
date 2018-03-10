@@ -1,8 +1,6 @@
 package main
 
 import(
-
-	_"github.com/andybalholm/cascadia"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,7 +10,6 @@ import(
 	"time"
 	"math/rand"
 	"github.com/PuerkitoBio/goquery"
-	_"go/doc"
 )
 
 type RowWordData struct{
@@ -34,7 +31,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	//index:= rand.Intn(88800)
 	// initializing the "WordRating" field in example of RowWordData
-	example.WordRating = 2
+	example.WordRating = rand.Intn(88800)
 	// trying to get value of "Word" to type it into "Word" field in example of RowWordData
 	word := getWord(example)
 	example.Word = word
@@ -75,7 +72,7 @@ func getWord(example RowWordData)(string) {
 }
 func getUsageExamples(example RowWordData)([]string){
 	//need to change the word to example.Word
-	urlToParse := OXFORD_DICTIONARY + "chaos"
+	urlToParse := OXFORD_DICTIONARY + example.Word
 
 	doc2, err := goquery.NewDocument(urlToParse)
 	if err != nil {
@@ -103,30 +100,27 @@ func getUsageExamples(example RowWordData)([]string){
 }
 func getWordDefinitions(example RowWordData)([]string){
 
-	urlToParse := "https://en.oxforddictionaries.com/definition/"
-	urlToParse = urlToParse + "chaos"
-
+	urlToParse := OXFORD_DICTIONARY + example.Word
 	doc2, err := goquery.NewDocument(urlToParse)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	definitionExamples := make([]string, 0)
-	doc2.Find(".subSenses li .ind ").Each(func(i int, s *goquery.Selection) {
+	doc2.Find(".semb li .trg ol li" ).Each(func(i int, s *goquery.Selection) {
 
 		definitionExample := s.Find("span").Text()
-		if i<5 {
-			definitionExamples = append(definitionExamples , definitionExample)
-			fmt.Println(definitionExamples[i])
-		}
+		definitionExamples = append(definitionExamples , definitionExample)
+
+
 
 	})
-
 	i:= 0
-	example.Definition = make([]string, 5)
+	example.Definition = make([]string, 0)
 	for i<len(definitionExamples) {
 		value := definitionExamples[i]
-		example.UsageExample[i] = value
+		example.Definition = append(example.Definition , value)
+		fmt.Println(example.Definition[i])
 		i++
 	}
 
