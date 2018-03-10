@@ -11,11 +11,11 @@ import (
 
 
 type RowWordData struct {
-	Word          string
-	Definitions   [][]string
-	UsageExamples [][]string
-	WordRang      int
-	partOfLanguage []string
+	Word           string
+	Definitions    [][]string
+	UsageExamples  [][]string
+	WordRang       int
+	PartOfLanguage []string
 }
 
 
@@ -37,7 +37,7 @@ func GetRandomWord() (*RowWordData, error) {
 		return nil, err
 	}
 
-	wordData.Definitions, wordData.UsageExamples, wordData.partOfLanguage ,err = getExtendedWordData(wordData.Word)
+	wordData.Definitions, wordData.UsageExamples, wordData.PartOfLanguage,err = getExtendedWordData(wordData.Word)
 	if err != nil {
 		return nil, err
 	}
