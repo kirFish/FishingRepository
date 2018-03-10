@@ -39,7 +39,7 @@ func main() {
 	usageExamples := getUsageExamples(example)
 	example.UsageExample = usageExamples
 	// gettting 5 or less definitions
-	getWordDefinitions(example)
+	example.Definitions = getWordDefinitions(example)
 
 }
 // got example like an argument and return "word" type - string
