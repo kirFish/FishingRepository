@@ -70,8 +70,14 @@ func getWordData(index int) (word string, err error)  {
 
 func getExtendedWordData(word string) (Definitions []string, UsageExamples []string, err error) {
 	urlToParse := OXFORD_DICTIONARY_URL + word
-	wordPage, err := goquery.NewDocument(urlToParse)
-	
+	wordPage,err := goquery.NewDocument(urlToParse)
+
+	if err!=nil {
+
+		return nil,nil,err
+
+	}
+
 	usageExamples := make([]string, 0)
 	wordPage.Find(".examples .exg .ex").Each(func(i int, s *goquery.Selection) {
 		usageExample := s.Find("em").Text()
