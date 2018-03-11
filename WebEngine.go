@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"bytes"
 	"github.com/PuerkitoBio/goquery"
+	"time"
 )
 
 
@@ -20,7 +21,6 @@ type RowWordData struct {
 
 
 const (
-	NUMBER_OF_EXAMPLES    = 5
 	WORD_COUNT_URL        = "http://www.wordcount.org/dbquery.php?"
 	OXFORD_DICTIONARY_URL = "https://en.oxforddictionaries.com/definition/"
 
@@ -30,10 +30,10 @@ func GetRandomWord() (*RowWordData, error) {
 	var (
 		err error
 		wordData = new(RowWordData)
-		random = getRandom()
-	)
 
-	wordData.Word, err = getWordData(random.Intn(86800))
+	)
+	rand.Seed(time.Now().UnixNano())
+	wordData.Word, err = getWordData(rand.Intn(86799))
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,6 @@ func getWordData(index int) (word string, err error)  {
 	parsedResponse := buffer.String()
 	word = parsedResponse[strings.Index(parsedResponse, "word0") + 6 : strings.Index(parsedResponse, "&freq0")]
 
-
 	return word,nil
 }
 
@@ -77,47 +76,15 @@ func getExtendedWordData(word string) (Definitions map[string][]string, UsageExa
 		return nil,nil,err
 	}
 
-	partsOfTheLanguage := make([]string, 0)
-	wordPage.Find("section .gramb h3 .pos ").Each(func(i int, s *goquery.Selection) {
+	definitions := make(map[string][]string)
+	usageExamples := make( map[string][]string )
 
-			value := s.Find("span").Text()
-			partsOfTheLanguage = append(partsOfTheLanguage,value)
-
-
+	wordPage.Find(".gramb ").Each(func(i int, s *goquery.Selection) {
+		languagePart := s.Find("h3 .pos").Text()
+		definition := s.Find(".semb .trg .ind").Text()
+		usageExample :=	s.Find(".semb li .trg .examples .exg .ex em").Text()
+		usageExamples[languagePart] = append(usageExamples[languagePart] , usageExample)
+		definitions[languagePart] = append(definitions[languagePart] , definition)
 	})
-
-	usageExamples := make(map[string][]string ,0)
-	definitions := make(map[string][]string , 0)
-	indexOfPartLanguageOne := 0
-	indexOfPartLanguageTwo := 0
-	//Definitions
-	wordPage.Find("section .semb li .trg .ind" ).Each(func(j int, s *goquery.Selection) {
-		if j < NUMBER_OF_EXAMPLES {
-			definition := s.Find("span").Text()
-			definitions[partsOfTheLanguage[indexOfPartLanguageOne]] = append(definitions[partsOfTheLanguage[indexOfPartLanguageOne]], definition)
-			indexOfPartLanguageOne++
-		}
-	})
-	//Examples of usage
-	wordPage.Find("section .examples .exg .ex" ).Each(func(k int, s *goquery.Selection) {
-		if k < NUMBER_OF_EXAMPLES {
-			usageExample := s.Find("em").Text()
-			usageExamples[partsOfTheLanguage[indexOfPartLanguageTwo]] = append(definitions[partsOfTheLanguage[indexOfPartLanguageTwo]], usageExample)
-
-		}
-		indexOfPartLanguageTwo++
-	})
-
 	return definitions, usageExamples,nil
-}
-
-
-func getRandom() rand.Rand {
-	var random rand.Rand
-
-	for i:=0; i < 100; i++ {
-		random.Intn(86800)
-	}
-
-	return random
 }
